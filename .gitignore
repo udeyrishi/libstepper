@@ -1,0 +1,7 @@
+# Output dirs
+out/
+
+# macOS files
+.DS_Store
+
+__pycache__
