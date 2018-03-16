@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.8)
+cmake_minimum_required(VERSION 3.2)
 set(PROJECT_NAME "libstepper")
 project(${PROJECT_NAME})
 ####################################################################################################
@@ -6,9 +6,9 @@ project(${PROJECT_NAME})
 
 message(STATUS "Build type: ${CMAKE_BUILD_TYPE}")
 
-#########################################Build flags################################################
+# Build flags
 set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_C_STANDARD 11)
+set(CMAKE_C_STANDARD 99)
 set(CMAKE_CXX_STANDARD_REQUIRED on)
 set(CMAKE_C_STANDARD_REQUIRED on)
 set(DEBUG_BUILD_FLAGS "-Wall -Wextra -Wsign-conversion -pedantic")
@@ -17,40 +17,37 @@ set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} ${RELEASE_BUILD_FLAGS}")
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} ${DEBUG_BUILD_FLAGS}")
 set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} ${RELEASE_BUILD_FLAGS}")
 set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} ${DEBUG_BUILD_FLAGS}")
+set(CMAKE_STATIC_LIBRARY_PREFIX "")
 
-########################################## Artifact destinations ##################################
+# Output vars
+set(LIB_TARGET "${PROJECT_NAME}")
+set(TEST_LIB "catch")
+set(TEST_TARGET "${PROJECT_NAME}-test")
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
-set(CMAKE_STATIC_LIBRARY_PREFIX "")
 
-#################################### The testing libary of choice #################################
-set(TEST_LIB "catch")
-set(TEST_INC "${CMAKE_CURRENT_SOURCE_DIR}/lib/${TEST_LIB}/inc")
-set(TEST_RUNNER_SRC "${CMAKE_CURRENT_SOURCE_DIR}/lib/${TEST_LIB}/src/runner.cpp")
-set(TEST_RUNNER_LIB "${TEST_LIB}-runner")
+# Input vars
+set(SRC_DIR "${CMAKE_SOURCE_DIR}/src")
+set(INC_DIR "${CMAKE_SOURCE_DIR}/inc")
+set(TEST_DIR "${CMAKE_SOURCE_DIR}/test")
+set(TEST_INC "${TEST_DIR}/inc")
 
-##################################### Artifact inputs/outputs #####################################
+file(GLOB_RECURSE LIB_SOURCES ${SRC_DIR}/*.cpp ${SRC_DIR}/*.c)
+add_library(${LIB_TARGET} STATIC ${LIB_SOURCES})
+target_include_directories(${LIB_TARGET} PUBLIC ${INC_DIR})
+target_link_libraries(${LIB_TARGET} -lpthread)
+
 # The Catch testing library
 add_library(${TEST_LIB} INTERFACE)
 target_include_directories(${TEST_LIB} INTERFACE ${TEST_INC})
 
-# The shared test runner lib. Mostly, because runner.cpp takes a while to compile to the pi.
-add_library(${TEST_RUNNER_LIB} STATIC ${TEST_RUNNER_SRC})
-target_include_directories(${TEST_RUNNER_LIB} PUBLIC ${TEST_INC})
-
-add_subdirectory(core)
-add_subdirectory(pi)
-
-# Actual executable
-set(MAIN "${CMAKE_CURRENT_SOURCE_DIR}/main.cpp")
-set(BIN_TARGET ${PROJECT_NAME}-demo)
-
-# The main executable
-add_executable(${BIN_TARGET} ${MAIN})
-target_link_libraries(${BIN_TARGET} ${CORE_LIB_TARGET})
-target_link_libraries(${BIN_TARGET} ${PI_LIB_TARGET})
-target_link_libraries(${BIN_TARGET} ${RASPBERRY_PI_GPIO_LIB})
+# The test binary
+file(GLOB_RECURSE TEST_SOURCES ${TEST_DIR}/*.cpp ${TEST_DIR}/*.c)
+add_executable(${TEST_TARGET} ${TEST_SOURCES})
+target_link_libraries(${TEST_TARGET} ${TEST_LIB})
+target_link_libraries(${TEST_TARGET} ${LIB_TARGET})
 
 # Expose tests to CMake
 enable_testing()
+add_test(NAME ${TEST_TARGET} COMMAND ${TEST_TARGET})

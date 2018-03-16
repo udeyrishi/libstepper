@@ -55,7 +55,7 @@ class Runner:
         return result
 
 
-def main(all, debug, clean, test, _main, run, run_args):
+def main(debug, clean, all, run):
     import os
     import sys
     platform = 'linux' if sys.platform in ('linux', 'linux2') else sys.platform
@@ -79,38 +79,12 @@ def main(all, debug, clean, test, _main, run, run_args):
         .then(lambda: os.chdir(out) == None)                                               \
         .then('cmake -DCMAKE_BUILD_TYPE={0} {1}'.format(flavour, project_root))            \
 
-    exes_built = []
-
-    def core_test_name():
-        return '{0}-core-test'.format(PROJECT)
-
-    def main_demo_name():
-        return '{0}-demo'.format(PROJECT)
-
     if all:
         call.then('make')
-        exes_built.append((os.path.join(out, 'core', 'bin', core_test_name()), False))
-        exes_built.append((os.path.join(out, 'bin', main_demo_name()) + ' ' + ' '.join(run_args), True))
+        if run:
+            call.then(os.path.join(out, 'bin', '{}-test'.format(PROJECT)))
     else:
-        if test:
-            call.then('make {0}-core-test'.format(PROJECT))
-            exes_built.append((os.path.join(out, 'core', 'bin', core_test_name()), False))
-
-        if _main:
-            call.then('make {0}-demo'.format(PROJECT))
-            exes_built.append((os.path.join(out, 'bin', main_demo_name()) + ' ' + ' '.join(run_args), True))
-
-    if len(exes_built) == 0:
-        print(Colors.WARNING + Colors.UNDERLINE + 'Warning: Only the makefiles, and no other artifacts, will be prepared. Run \'{0} -h\' to see all the options.'.format(__file__) + Colors.ENDC)
-    else:
-        print(Colors.OKGREEN + 'These executables will be {0} in this sequence:'.format('run' if run else 'built') + Colors.ENDC)
-        for exe, as_root in exes_built:
-            print(u'\u2022 {}'.format('[root] ' if as_root else '') + exe)
-        print(Colors.OKGREEN + '===============================================================================' + Colors.ENDC)
-
-    if run:
-        for exe, as_root in exes_built:
-            call.then(('sudo ' if as_root else '') + exe)
+        call.then('make {}'.format(PROJECT))
 
     succeeded = call.run()
     if not succeeded and not call.interrupted:
@@ -122,13 +96,10 @@ if __name__ == '__main__':
     import argparse
     import sys
     parser = argparse.ArgumentParser(description='builds the project')
-    parser.add_argument('-a', '--all', action='store_true', help='build everything')
     parser.add_argument('-d', '--debug', action='store_true', help='build the debug flavour instead of release')
     parser.add_argument('-c', '--clean', action='store_true', help='clean the flavour\'s temporary files and the build artifacts before building')
-    parser.add_argument('-t', '--test', action='store_true', help='build the cross-platform unit-tests for the core module')
-    parser.add_argument('-m', '--main', action='store_true', help='build the main {} demo executable'.format(PROJECT))
-    parser.add_argument('-r', '--run', action='store_true', help='run whichever executables were asked to be built after they are built (unit tests, then main exe)')
-    parser.add_argument('run_args', nargs='*', help='params to pass through to the main exe, if the main exe is built, and is asked to run')
+    parser.add_argument('-a', '--all', action='store_true', help='also build the test exectuable, besides the static lib')
+    parser.add_argument('-r', '--run', action='store_true', help='if the test exectuable is built, also run it')
     args = parser.parse_args()
-    rc = 0 if main(all=args.all, debug=args.debug, clean=args.clean, test=args.test, _main=args.main, run=args.run, run_args=args.run_args) else -1
+    rc = 0 if main(debug=args.debug, clean=args.clean, all=args.all, run=args.run) else -1
     sys.exit(rc)
