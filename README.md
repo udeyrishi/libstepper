@@ -1,5 +1,7 @@
 # libstepper
 
+[![Build Status](https://travis-ci.org/udeyrishi/libstepper.svg?branch=master)](https://travis-ci.org/udeyrishi/libstepper)
+
 **libstepper** is a cross-platform, hardware agnostic, C++ driver for controlling simple stepper motors. 
 
 
