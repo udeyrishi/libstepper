@@ -1,5 +1,4 @@
 # libstepper
------------------
 
 **libstepper** is a cross-platform, hardware agnostic, C++ driver for controlling simple stepper motors. 
 
