@@ -1,3 +1,7 @@
+/**
+ Copyright (c) 2018 Udey Rishi. All rights reserved.
+*/
+
 #include <stepper.hpp>
 #include <stdexcept>
 #include <exception.hpp>

@@ -1,3 +1,7 @@
+/**
+ Copyright (c) 2018 Udey Rishi. All rights reserved.
+*/
+
 #include <catch.hpp>
 #include <stepper.hpp>
 #include <exception.hpp>
