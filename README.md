@@ -7,30 +7,21 @@
 
 ## Building
 
-libstepper is a CMake project, and requires a C++11 capable compiler. It has been tested to compile on macOS 10.3.3 (Apple clang 9.0.0), gcc 6.3.0 on Raspbian, and gcc 7.2.0 on Ubuntu. You can either compile it as a regular CMake project, or via the included build script.
+libstepper is a CMake project, and requires a C++11 capable compiler. It has been tested to compile on macOS 10.3.3 (Apple clang 9.0.0), gcc 6.3.0 on Raspbian, and gcc 7.2.0 on Ubuntu. 
 
-```
-$ ./build -h
-usage: build [-h] [-d] [-c] [-a] [-r]
-
-builds the project
-
-optional arguments:
-  -h, --help   show this help message and exit
-  -d, --debug  build the debug flavour instead of release
-  -c, --clean  clean the flavour's temporary files and the build artifacts
-               before building
-  -a, --all    also build the test exectuable, besides the static lib
-  -r, --run    if the test exectuable is built, also run it
-```
-
-Running `build -a` will build the static lib in `out/linux/release/lib/libstepper.so` (for a linux target, for instance). You can then [link](https://stackoverflow.com/a/1705972) the library to your project. The test executable will be present in `out/linux/release/bin/libsteppper-test`.
-
-Alternatively (and preferably), if you use CMake in your project, libstepper's `CMakeLists.txt` exposes the `LIB_STEPPER` build artifact to any parent projects. So you can include libstepper as a child project, and link the static library to your build targets in your `CMakeLists.txt`:
+If you use CMake in your project, libstepper's `CMakeLists.txt` exposes the `LIB_STEPPER` build artifact to any parent projects. So you can include libstepper as a child project, and link the static library to your build targets in your `CMakeLists.txt`:
 
 ```
 target_link_libraries(${MY_TARGET} ${LIB_STEPPER})
 ```
+
+Alternatively, you can build the static library via the included build script:
+
+```
+$ ./build
+```
+
+Use `build -h` to see the other options. Running `build` will build the static lib in `out/linux/release/lib/libstepper.so` (for a linux target, for instance). You can then [link](https://stackoverflow.com/a/1705972) the library to your project.
 
 ## Usage
 
