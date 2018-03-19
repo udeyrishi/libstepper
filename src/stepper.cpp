@@ -102,13 +102,13 @@ StepperDriver::~StepperDriver() {
 }
 
 void StepperDriver::interrupt() {
-    unique_lock<shared_mutex> lock(interruptMutex);
+    unique_lock<mutex> lock(interruptMutex);
     enableTerminal->write(false);
     interrupted = true;
 }
 
 bool StepperDriver::isInterrupted() {
-    shared_lock<shared_mutex> lock(interruptMutex);
+    unique_lock<mutex> lock(interruptMutex);
     return interrupted;
 }
 
@@ -157,7 +157,7 @@ static void moddedStepUInt(T &num, const RotationDirection direction, const T ma
 }
 
 bool StepperDriver::driveWaveform(const uint64_t steps, const RotationDirection direction) {
-    static const uint8_t baseWaveform = 0b0000'1100;
+    static const uint8_t baseWaveform = 0x0C; // == 0b00001100
 
     for (uint64_t i = 0; i < steps; ++i) {
         if (isInterrupted() || !adjustSpeed()) {
@@ -165,10 +165,10 @@ bool StepperDriver::driveWaveform(const uint64_t steps, const RotationDirection 
         }
 
         // Do a right bit shift by "nextWaveformStep" steps on "baseWaveform", wrapping around only on the last 4 bits.
-        const uint8_t valueToBeWritten = (baseWaveform >> nextWaveformStep) | (((baseWaveform << (8 - nextWaveformStep)) & 0b1111'0000) >> 4);
+        const uint8_t valueToBeWritten = (baseWaveform >> nextWaveformStep) | (((baseWaveform << (8 - nextWaveformStep)) & 0xF0) >> 4);
 
         for (uint8_t i = 0; i < 4; ++i) {
-            coilTerminals[i]->write(valueToBeWritten & (0b0000'1000 >> i));
+            coilTerminals[i]->write(valueToBeWritten & (0x08 /*0b00001000*/ >> i));
         }
 
         moddedStepUInt(nextWaveformStep, direction, (uint8_t)4);
@@ -180,7 +180,7 @@ bool StepperDriver::driveWaveform(const uint64_t steps, const RotationDirection 
 
 bool StepperDriver::step(const uint64_t steps, const RotationDirection direction) {
     {
-        unique_lock<shared_mutex> lock(interruptMutex);
+        unique_lock<mutex> lock(interruptMutex);
         interrupted = false;
     }
     enableTerminal->write(true);
@@ -234,13 +234,13 @@ bool StepperDriver::adjustSpeed() {
     if (rpm == 0) {
         return false;
     }
-    sleep_for(microseconds((60'000'000/(rpm * stepsInRotation))));
+    sleep_for(microseconds((60000000/(rpm * stepsInRotation))));
     return true;
 }
 
 void StepperDriver::drive(const RotationDirection direction) {
     {
-        unique_lock<shared_mutex> lock(interruptMutex);
+        unique_lock<mutex> lock(interruptMutex);
         interrupted = false;
     }
     enableTerminal->write(true);

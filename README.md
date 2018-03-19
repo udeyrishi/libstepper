@@ -7,7 +7,7 @@
 
 ## Building
 
-libstepper is a CMake project, and requires a C++17 capable compiler. It has been tested to compile on macOS 10.3.3 (Apple clang 9.0.0), gcc 6.3.0 on Raspbian, and gcc 7.2.0 on Ubuntu. You can either compile it as a regular CMake project, or via the included build script.
+libstepper is a CMake project, and requires a C++11 capable compiler. It has been tested to compile on macOS 10.3.3 (Apple clang 9.0.0), gcc 6.3.0 on Raspbian, and gcc 7.2.0 on Ubuntu. You can either compile it as a regular CMake project, or via the included build script.
 
 ```
 $ ./build -h

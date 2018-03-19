@@ -6,7 +6,7 @@
 
 #include <stdint.h>
 #include <signal.hpp>
-#include <shared_mutex>
+#include <mutex>
 
 namespace libstepper {
 
@@ -58,7 +58,7 @@ private:
     bool interrupted;
     uint8_t nextWaveformStep;
     uint64_t nextRotationStep;
-    mutable std::shared_mutex interruptMutex;
+    mutable std::mutex interruptMutex;
 };
 
 class StepperDriverBuilder {
